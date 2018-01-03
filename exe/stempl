@@ -6,13 +6,13 @@ require 'slop'
 opts = Slop.parse suppress_errors: true do |o|
 	o.string '-r', '--repository', 'Template location (local or remote git, default: ~/.stempl)', default: '~/.stempl'
 	o.string '-t', '--target', 'Target directory for skeletons, default: .', default: '.'
-	o.array '--names', 'Name of skeleton'
 	o.bool '-f', '--force', 'force overwrite (default: false)', default: false
 	o.bool '-v', '--verbose', 'enable verbose mode'
 	o.bool '-q', '--quiet', 'suppress output (quiet mode)'
 	o.bool '-d', '--dry-run', 'dry-run - do not create any files or directories, just print the actions'
+	o.array '--names', 'Name of skeleton'
 	o.on '--version', 'print the version' do
-		puts Asket::VERSION
+		puts Stempl::VERSION
 		exit 0
 	end
 	o.on '-h', '--help' do
@@ -22,12 +22,70 @@ opts = Slop.parse suppress_errors: true do |o|
 end
 
 args = opts.arguments
-vars = args.join(' ').scan(/(--[a-zA-Z0-9]+ [\-a-zA-Z0-9'" ]+)/)
-names = args.join(' ').gsub(/(--[a-zA-Z0-9]+ [\-a-zA-Z0-9'" ]+)/, '').strip
-puts names
+
+# parse parameters in the form or --varname 'some value' and --varname 3 into variable names and values. Everything else belongs to the names
+last_chr = ''
+quoted = nil
+variable_name = nil
+variable_value = nil
+vars = {}
+names = ''
+chrs = args.join(' ').split('')
+i = 0
+while i < chrs.size do
+# myargs.each_with_index.each do |chr, i|
+	chr = chrs[i]
+	if (chr == '-' and (i+1) < chrs.size and chrs[i+1] == '-') then
+		variable_name = ''
+		i = i + 2
+		next
+	else
+		i = i + 1
+	end
+	# read variable name after --
+	if !variable_name.nil? and variable_value.nil? then
+		if chr != ' '
+			variable_name << chr
+		else
+			variable_value = ''
+		end
+		next
+	end
+	# when variable name is done read variable value - possibly quoted
+	if !variable_name.nil? and !variable_value.nil? then
+		if chr =~ /^['"]$/ and quoted.nil? then # begin of quote
+			quoted = chr
+			next
+		elsif chr == quoted and !quoted.nil? then # end of quote
+			quoted = false
+		elsif quoted.nil?
+			quoted = ' '
+		end
+		if chr == quoted or (quoted == false) then
+			vars[variable_name] = variable_value
+			variable_name = nil
+			variable_value = nil
+			quoted = nil
+		else
+			variable_value << chr
+		end
+		next
+	end
+	if variable_name.nil? and variable_value.nil? then
+		names << chr #unless chr == '-' and (i+1) < myargs.size and myargs[i+1] != '-'
+	end
+	#last_chr = chr
+end
+if !quoted.nil? then
+	STDERR.puts "Error parsing #{args.join(' ')}. Make sure predefined variables are quoted using \' and all quotes match."
+	exit 1
+end
+
+names = names.strip.split(' ') + opts[:names]
+
 begin
-	asket = Asket::Generator.new(opts, names, vars)
-	asket.write_skeleton
+	stempl = Stempl::Generator.new(opts, names, vars)
+	stempl.write_skeleton
 rescue => e
 	puts e.message
 	puts e.backtrace if opts.verbose?

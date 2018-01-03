@@ -1,16 +1,16 @@
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "asket/version"
+require "stempl/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "stempl"
-  spec.version       = Asket::VERSION
+  spec.version       = Stempl::VERSION
   spec.authors       = ["Sebastian Ginzel"]
   spec.email         = ["Sebastian.Ginzel@inf.h-brs.de"]
 
-  spec.summary       = %q{Create directory and file structures from templates.}
-  spec.description   = %q{A flexible and dynamic tool to define skeletons for projects.}
+  spec.summary       = %q{A simple tool to create skeletons from templates.}
+  spec.description   = %q{STEMPL (Skeleton TEMPLate) is a tool to setup skeletons from templates with optional ERB syntax. It is helpful to scaffold repetetive file and folder structures.}
   spec.homepage      = "http://github.com/sginzel/stempl"
   spec.license       = "MIT"
 
@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
   end
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
-    f.match(%r{^(test|spec|features)/})
+    f.match(%r{^(test|spec|features|\.idea)/|\.travis.yml|\.gitignore|\.ruby.*})
   end
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }

@@ -1,6 +1,6 @@
 module Stempl
 	module BinderInput
-		def read(name, description = "Value for #{name}:")
+		def cli_read(name, description = "Value for #{name}:")
 			val = @binder.get_variable(name)
 			if (val.nil?) then
 				print description + " "
@@ -10,7 +10,7 @@ module Stempl
 			@binder.get_variable(name)
 		end
 		
-		def select_file(name, description = "Value for #{name}:")
+		def cli_select_file(name, description = "Select file #{name}:")
 			val = @binder.get_variable(name)
 			if (val.nil?) then
 				val = nil

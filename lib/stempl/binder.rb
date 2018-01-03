@@ -3,6 +3,8 @@ require 'stempl/binder_input'
 
 module Stempl
 	class Binder
+		attr_reader :variables
+		
 		def initialize(variables)
 			@variables = variables
 		end
@@ -31,7 +33,7 @@ module Stempl
 		
 		def method_missing(meth, *args)
 			if self[meth].nil? then
-				read(meth, "Undefined variable (#{meth}) found:")
+				cli_read(meth, "Undefined variable (#{meth}) found:")
 			else
 				self[meth]
 			end
