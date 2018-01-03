@@ -78,6 +78,84 @@ If user input is required use `cli_read` and `cli_select_file` to read values fr
 While parsing the template undefined variables are detected and a `cli_read` command prompt will query a values from the user. 
 This is repeated until no undefinded variables are found.
 
+### .config.yaml
+
+````
+--- # .config.yaml
+name: 
+version: 0.1
+collate: 
+  - file_zzz
+  - file_aaa
+  - file_cca
+variables:
+  name: John Smith
+  age: 33
+dialog: 
+  - # Dialog #1
+    name: Johny doe
+    age: 123
+  - # Dialog #2
+    favorite_file: select_file
+    favorite_directory: select_dir
+    favorite_food: 
+    - Pizza
+    - Salad
+--- 
+````
+
+- *name* - name of the stempl. 
+- *version* - version (for future use)
+- *collate* - Order in which files should be processed. This can be important when defining one which is used in multiple files. 
+ Any file not present in the collate field is appended to the collation and sorted alphabetically. 
+- *variables* - A lookup for predefined variables.
+- *dialog* - An array of hashes that are used to build the dialogs. 
+
+The template engine can also be used for the config file. 
+Although obviously, the variables section is ignored while parsing the config file at this stage.
+
+````
+--- # .config.yaml
+name: 
+version: 0.1
+collate: 
+  - file_zzz
+  - file_aaa
+  - file_cca
+variables:
+  name: <%= cli_read('person_name', 'give a default name')%>
+  age: 33
+dialog: 
+  - # Dialog #1
+    name: <%= person_name %>
+    age: 123
+  - # Dialog #2
+    favorite_file: select_file
+    favorite_directory: select_dir
+    favorite_food: 
+    - Pizza
+    - Salad
+--- 
+````
+
+If you want to use a more familiar syntax you can also do this
+````
+<%=
+{
+    'name' => 'Some Name'
+    'version' => 0.1,
+    'collate' => %w( file_zzz file_aaa file_cca ), 
+    'variables' => {
+        'name' => cli_read('person_name', 'give a default name')
+        'age' => 33
+    },
+    'dialog' => [
+     { 'name' => person_name, 'age' => 123 },
+     { 'favorite_file' => select_file, 'favorite_folder' => select_dir, 'favorite_food' => %w(Pizza Salad)}
+    ]
+}.to_yaml %>
+````
+
 Variables can also be pre defined in the .config.yaml
 ````
 variables:
@@ -113,86 +191,51 @@ Strings and Numbers will result in text boxes, select_file and select_dir will p
 When using dialogs the GUI is not always destroyed properly and only closes after the application terminates.
 
 ## Examples
+### Home directory skeleton
+This simple skeleton reads the standard .bashrc and appends a customized history size.
+The welcome message is customized if the user is an admin. 
 ````
-NAME <%= name %>
-AGE <%= age %>
+# .bashrc.erb
+<%= File.open('/etc/skel/.bashrc', 'r').read %>
 
-<%= read 'user_input', "some user input" %>
-<%= select_file 'user_file', "select some file" %>
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+HISTSIZE=<%= cli_read 'histsize', 'How many records should be in the history? ' %>
+HISTFILESIZE=<%= cli_read 'histfilesize', 'How big should the history file be? ' %>
 
-<%= predef %>
-
-<%= nodef %>
-
-<%= read 'user_input', "THIS MUST NOT HAPPEN" %>
-````
-### Example Config
+echo '###########################################'
+echo 'Welcome <%= username %> to your new account'
+echo '<%= (is_admin == "true")?("YOU ARE ADMIN"):("") %> '
+echo '###########################################'
 
 ````
---- # .config.yaml
+
+````
+---- # .config.yaml.erb
+name: homeskeleton
 version: 0.1
 collate: 
-  - somatic
-  - bbbb
-  - zzz.txt.erb
+  - .bashrc
 variables:
-  name: John Smith
-  age: 33
 dialog: 
-  - # First window
-    name: Johny doe
-    age: 123
-  - # second window
-    blubber: select_file
-    blabber: select_dir
-    testeas: 
-    - Hallo
-    - Welt
---- # Inline
-````
-
-The template engine can also be used for the config file. Although obviously, the variables section is ignored while parsing the config file at this stage.
-
-````
---- #.config.yaml.erb
-version: 0.1
-collate: 
-  - somatic
-  - bbbb
-  - zzz.txt.erb
-variables:
-  name: <%= cli_read 'name', 'give a name' %>
-  age: 33
-dialog: 
-  - # First window
-    name: Johny doe
-    age: 123
-  - # second window
-    blubber: select_file
-    blabber: select_dir
-    testeas: 
-    - Hallo
-    - Welt
+  - 
+    username:  
+    histsize: <%= cli_read 'histsize', 'Tell me the histsize on the console please' %>
+    histfilesize: <%= (histsize).to_i*2 %>
+    is_admin: 
+      - Yes
+      - No
 ---
 ````
 
-If you want to use a more familiar syntax you can also do this
-````
-<%=
-{
-    'name' => 'Some Name'
-    'version' => 0.1,
-    'collate' => %w( somatic bbbb zzz.txt.erb ), 
-    'variables' => {
-        'name' => cli_read('name', 'give a name')
-        'age' => 33
-    },
-    'dialog' => [
-     { 'name' => John Doe, 'age' => 123 },
-     { 'favorite_file' => select_file, 'favorite_folder' => select_dir, 'favorite_food' => %w(Pizza Salad)}
-    ]
-}.to_yaml %>
-````
+#### Notes
+YAML was designed as a readable format and does this job well. 
+Unfortunately this means that 'yes' and 'no' are converted into true/fals when the .yaml file is parsed.
+That is why line #10 in .bashrc.erb does not check `is_admin == 'Yes'`. 
+
+All values which are read over the console or dialog are stored as strings/text. 
+Keep this in mind if you want to work with numbers (e.g. line #11 of .config.yaml.erb)
+
+
 
 ## Development
 In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/asket`. To experiment with that code, run `bin/console` for an interactive prompt.
