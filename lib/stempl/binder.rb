@@ -10,11 +10,11 @@ module Stempl
 		end
 		
 		def register_variable(name, value)
-			@variables[name] = value
+			@variables[name.to_s] = value
 		end
 		
 		def get_variable(name)
-			@variables[name]
+			@variables[name.to_s]
 		end
 		
 		def binding
