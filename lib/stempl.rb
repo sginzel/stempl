@@ -250,7 +250,6 @@ module Stempl
 				end
 			end
 			files.each do |fin|
-				next if File.basename(fin).to_s[0] == '.'
 				inout[fin] = fin.gsub(template.directory, target_dir).gsub(/\.erb$/, '')
 			end
 			inout
