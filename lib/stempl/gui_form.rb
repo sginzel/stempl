@@ -109,7 +109,7 @@ module Stempl
 						cb.append_text("")
 					end
 					value.each do |v|
-						cb.append_text(v)
+						cb.append_text(v.to_s)
 					end
 					input = cb
 				else
