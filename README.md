@@ -1,7 +1,7 @@
-# STEMPL - Skeleton TEMPLate
+# STEMPL - *S*keleton *TEMPL*ate
 stempl is a simple tool to create the same files and folder structure (skeleton) from a template directory. 
 Each .erb file in the template is parsed using the ERB template engine, which allows customization of the skeleton if neccessary.
-This is useful if you need to repeatedly create similar skeleton with dynmaic content, such as project names or parameters.  
+This is useful if you need to repeatedly create similar skeletons with minor differences in content.  
 
 ## Installation
 
@@ -223,18 +223,11 @@ That is why line #10 in .bashrc.erb does not check `is_admin == 'Yes'`.
 All values which are read over the console or dialog are stored as strings/text. 
 Keep this in mind if you want to work with numbers (e.g. line #11 of .config.yaml.erb)
 
-
-
-## Development
-In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/asket`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/sginzel/asket. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+Bug reports and pull requests are welcome on GitHub at https://github.com/sginzel/stempl. 
+This project is intended to be a safe, welcoming space for collaboration, and contributors 
+are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 
 ## License
 
@@ -242,4 +235,4 @@ The gem is available as open source under the terms of the [MIT License](https:/
 
 ## Code of Conduct
 
-Everyone interacting in the Asket project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/asket/blob/master/CODE_OF_CONDUCT.md).
+Everyone interacting in the Stempl project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/sginzel/stempl/blob/master/CODE_OF_CONDUCT.md).
