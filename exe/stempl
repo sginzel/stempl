@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+require 'stempl'
+require 'slop'
+
+opts = Slop.parse suppress_errors: true do |o|
+	o.string '-r', '--repository', 'Template location (local or remote git, default: ~/.stempl)', default: '~/.stempl'
+	o.string '-t', '--target', 'Target directory for skeletons, default: .', default: '.'
+	o.array '--names', 'Name of skeleton'
+	o.bool '-f', '--force', 'force overwrite (default: false)', default: false
+	o.bool '-v', '--verbose', 'enable verbose mode'
+	o.bool '-q', '--quiet', 'suppress output (quiet mode)'
+	o.bool '-d', '--dry-run', 'dry-run - do not create any files or directories, just print the actions'
+	o.on '--version', 'print the version' do
+		puts Asket::VERSION
+		exit 0
+	end
+	o.on '-h', '--help' do
+		puts o
+		exit 0
+	end
+end
+
+args = opts.arguments
+vars = args.join(' ').scan(/(--[a-zA-Z0-9]+ [\-a-zA-Z0-9'" ]+)/)
+names = args.join(' ').gsub(/(--[a-zA-Z0-9]+ [\-a-zA-Z0-9'" ]+)/, '').strip
+puts names
+begin
+	asket = Asket::Generator.new(opts, names, vars)
+	asket.write_skeleton
+rescue => e
+	puts e.message
+	puts e.backtrace if opts.verbose?
+	exit 1
+end
