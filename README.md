@@ -82,7 +82,7 @@ This is repeated until no undefinded variables are found.
 
 ````
 --- # .config.yaml
-name: 
+name: 'Some Name'
 version: 0.1
 collate: 
   - file_zzz
@@ -108,7 +108,9 @@ dialog:
 - *version* - version (for future use)
 - *collate* - Order in which files should be processed. This can be important when defining one which is used in multiple files. 
  Any file not present in the collate field is appended to the collation and sorted alphabetically. 
-- *variables* - A lookup for predefined variables.
+- *variables* - A lookup for predefined variables. Can also be given on the command line `stempl some_stempl --name \'John Doe\' --age 33`.
+Of course you will run into trouble if your variable names correspond to an option recognized by stempl. 
+Please use \\' to quote strings with spaces from a command line.   
 - *dialog* - An array of hashes that are used to build the dialogs. 
 
 The template engine can also be used for the config file. 
@@ -116,7 +118,7 @@ Although obviously, the variables section is ignored while parsing the config fi
 
 ````
 --- # .config.yaml
-name: 
+name: 'Some Name'
 version: 0.1
 collate: 
   - file_zzz
@@ -138,7 +140,7 @@ dialog:
 --- 
 ````
 
-If you want to use a more familiar syntax you can also do this
+If you want to use a more familiar syntax you can also parse a Has into a yaml when parsing the .config.yaml.erb template.
 ````
 <%=
 {
@@ -155,20 +157,6 @@ If you want to use a more familiar syntax you can also do this
     ]
 }.to_yaml %>
 ````
-
-Variables can also be pre defined in the .config.yaml
-````
-variables:
-  name: John Smith
-  age: 33
-````
-
-or passed on as parameters 
-
-`stempl -t target new_stempl --name \'Johny Smith\' --age 33`
-
-Of course you will run into trouble if your variable names correspond to an option recognized by stempl. 
-Please use \\' to quote strings with spaces from a command line.  
 
 ### Dialogs
 Dialogs are displayed using GTK3 and the input types are determined by the default values provided in the .config.yaml.
