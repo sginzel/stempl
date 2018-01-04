@@ -17,7 +17,7 @@ And then execute:
 
 Or build and install it yourself as:
 
-    $ git clone git://github.com/sginzel/stempl && cd stempl && bundle install && gem build stempl && gem install -g stempl
+    $ git clone https://github.com/sginzel/stempl.git && cd stempl && bundle install && gem build stempl && gem install stempl
 
 stempl was developed and tested with ruby 2.3.3, but anything >2.0 should work without guarantees.   
 
