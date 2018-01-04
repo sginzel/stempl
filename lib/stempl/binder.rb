@@ -3,10 +3,15 @@ require 'stempl/binder_input'
 
 module Stempl
 	class Binder
-		attr_reader :variables
+		attr_reader :variables, :repository, :target_dir
+		attr_accessor :source, :target
 		
-		def initialize(variables)
+		def initialize(variables, repository, target_dir)
 			@variables = variables
+			@source = nil
+			@target = nil
+			@repository = repository
+			@target_dir = target_dir
 		end
 		
 		def register_variable(name, value)
@@ -31,11 +36,15 @@ module Stempl
 			@binder = binder
 		end
 		
-		def method_missing(meth, *args)
-			if self[meth].nil? then
-				cli_read(meth, "Undefined variable (#{meth}) found:")
+		def method_missing(meth, *args, &block)
+			if !@binder.respond_to?(meth) then
+				if self[meth].nil? then
+					cli_read(meth, "Undefined variable (#{meth}) found:")
+				else
+					self[meth]
+				end
 			else
-				self[meth]
+				@binder.send(meth, *args, &block)
 			end
 		end
 		
