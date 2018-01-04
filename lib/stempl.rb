@@ -240,11 +240,14 @@ module Stempl
 			# sort according to collation. But make sure directories are always in front
 			collation = (config['collate'] || []).dup
 			collation = [collation] unless collation.is_a?(Array)
-			collation.map! {|f| File.expand_path(f, template.directory)}
+			collation.reject!(&:nil?)
+			collation.map! {|f| puts f; File.expand_path(f, template.directory)}
 			if (@opts.verbose?) then
 				puts "[CONFIG]"
 				p config
 			end
+			
+			files.reject!(&:nil?)
 			directories = files.select {|f| File.directory? f}
 			files       = files - directories
 			# sort files by collation
