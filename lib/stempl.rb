@@ -45,6 +45,12 @@ module Stempl
 			files.reject! {|f| File.basename(f) == '.config.yaml'}
 			files.reject! {|f| File.basename(f) == '.config.yaml.erb'}
 			
+			# exclude files
+			toexclude = Hash[(config[:exclude] || []).map{|f| File.expand_path(template.directory, f)}
+						.map{|f| [f, true]}]
+			toexclude.default = false
+			files.reject! {|f| toexclude[f]}
+			
 			# create folders and
 			# return a hash that maps the input file location to the output file location
 			inout = setup_structure(files, template, config)
@@ -62,32 +68,35 @@ module Stempl
 					variables.merge!(form.get)
 				end
 			end
-			
-			template_binding = Stempl::Binder.new(variables)
+			template_binding = Stempl::Binder.new(variables, template.directory, target_dir)
 			## copy each file, parsing .erb files
 			inout.each do |finpath, fout|
-				if (File.exist? fout) then
+				if (!fout.nil? and File.exist? fout) then
 					raise "#{fout} already exists. Use --force to overwrite." unless @opts.force?
 				end
 				puts "\t#{finpath} -> #{fout}" if @opts.verbose? && !@opts.dry_run?
 				if (finpath =~ /\.erb$/) then
 					fin    = File.new(finpath, 'r')
-					buffer = parse_template(fin, template_binding)
+					buffer = parse_template(fin, template_binding, fout)
 					fin.close
-					if (!@opts.dry_run?)
-						File.open(fout, "w+") do |skel|
-							skel.write(buffer)
+					if (!fout.nil?) then
+						if (!@opts.dry_run?)
+							File.open(fout, "w+") do |skel|
+								skel.write(buffer)
+							end
+						else
+							puts "[FILE] #{fout}"
+							if @opts.verbose?
+								puts buffer
+								puts "[EOF] #{fout}"
+							end
 						end
 					else
-						puts "[FILE] #{fout}"
-						if @opts.verbose?
-							puts buffer
-							puts "[EOF] #{fout}"
-						end
+						puts "#{finpath} => NOCOPY" if @opts.verbose?
 					end
 				else
 					if (!@opts.dry_run?)
-						FileUtils.cp(finpath, fout)
+						FileUtils.cp(finpath, fout) unless fout.nil?
 					else
 						puts "[FILE] CP #{finpath} -> #{fout}"
 					end
@@ -108,8 +117,10 @@ module Stempl
 			
 		end
 		
-		def parse_template(fin, template_binding)
+		def parse_template(fin, template_binding, fout = nil)
 			buffer = nil
+			template_binding.source = fin.path
+			template_binding.target = fout
 			begin
 				buffer = build(fin, template_binding)
 			end
@@ -163,9 +174,9 @@ module Stempl
 			
 			if ((!config_file.nil?) && (File.exist? config_file))
 				if (config_file =~ /\.erb$/) then
-					template_binding = Stempl::Binder.new(@_locals.dup)
+					template_binding = Stempl::Binder.new(@_locals.dup, template.directory, target_dir)
 					fin              = File.new(config_file, 'r')
-					buffer           = parse_template(fin, template_binding)
+					buffer           = parse_template(fin, template_binding, nil)
 					fin.close
 					puts buffer
 					config = YAML.load(buffer)
@@ -177,7 +188,6 @@ module Stempl
 			config.default_proc = proc do |hash, key|
 				if key.is_a?(String) and hash.keys.include?(key.to_sym) then
 					hash[key.to_sym]
-				
 				elsif key.is_a?(Symbol) and hash.keys.include?(key.to_s) then
 					hash[key.to_s]
 				else
@@ -249,8 +259,16 @@ module Stempl
 					puts "[MKDIR] #{dir.gsub(template.directory, target_dir)}"
 				end
 			end
+			# nocopy
+			docopy = Hash[config[:nocopy].map{|f| File.expand_path(File.join(template.directory, f))}
+							  .map{|f| [f, false]}]
+			docopy.default = true
 			files.each do |fin|
-				inout[fin] = fin.gsub(template.directory, target_dir).gsub(/\.erb$/, '')
+				if (docopy[fin])
+					inout[fin] = fin.gsub(template.directory, target_dir).gsub(/\.erb$/, '')
+				else
+					inout[fin] = nil
+				end
 			end
 			inout
 		end

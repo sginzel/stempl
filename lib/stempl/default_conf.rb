@@ -3,6 +3,8 @@ module Stempl
 		'name'      => 'stempl template',
 		'version'   => 0.01,
 		'collate'   => [],
+		'exclude'   => [],
+		'nocopy'    => [],
 		'variables' => {},
 		'dialog'    => []
 	}
