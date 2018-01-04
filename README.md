@@ -80,7 +80,20 @@ If user input is required use `cli_read` and `cli_select_file` to read values fr
 While parsing the template undefined variables are detected and a `cli_read` command prompt will query a values from the user. 
 This is repeated until no undefinded variables are found.
 
-### .config.yaml
+### Template commands
+- <% ... %> - execute code that is inside <% %> brackets.  
+- <%= ... %> - execute code and add the last return value to the skeleton. Nesting is not possible. 
+- *cli_read (varname, prompt)* - query a value through the command line (alias: `read`).
+- *cli_select_file (varname, prompt)* - select a file through the command line (alias: `select_file`).
+- *dialog ({varname: "default value", ...})* - Opens a GUI dialog to prompt for user input. 
+- *dialog (["varname1", "varname2", ...]})* - `dialog()` can also handle arrays and defaults to text input. 
+- *repository* - the template repository location.
+- *target_dir* - the location of the skeleton to generate.
+- *source* - template file location.
+- *target* - skeleton file location. Is `nil` when the file is included in `nocopy` section of the config file.
+
+### Configuration
+ Add a YAML file named `.config.yaml` to the template directory to configure the parsing process. 
 
 ````
 --- # .config.yaml
@@ -89,6 +102,10 @@ version: 0.1
 collate: 
   - file_zzz
   - file_aaa
+  - file_cca
+exclude: 
+  - bbb.*
+nocopy: 
   - file_cca
 variables:
   name: John Smith
@@ -106,10 +123,13 @@ dialog:
 --- 
 ````
 
-- *name* - name of the stempl. 
+- *name* - name of the stempl.
 - *version* - version (for future use)
 - *collate* - Order in which files should be processed. This can be important when defining one which is used in multiple files. 
- Any file not present in the collate field is appended to the collation and sorted alphabetically. 
+ Any file not present in the collate field is appended to the collation and sorted alphabetically.
+- *exclude* - Files to be excluded from the template
+- *nocopy* - These files are only passed through the template engine, but the result is not copied to the skeleton. 
+These files require the .erb extension and can be used to execute code while processing a template. 
 - *variables* - A lookup for predefined variables. Can also be given on the command line `stempl some_stempl --name \'John Doe\' --age 33`.
 Of course you will run into trouble if your variable names correspond to an option recognized by stempl. 
 Please use \\' to quote strings with spaces from a command line.   
@@ -125,6 +145,10 @@ version: 0.1
 collate: 
   - file_zzz
   - file_aaa
+  - file_cca
+exclude: 
+  - bbb.*
+nocopy: 
   - file_cca
 variables:
   name: <%= cli_read('person_name', 'give a default name')%>
@@ -149,6 +173,9 @@ If you want to use a more familiar syntax you can also parse a Has into a yaml w
     'name' => 'Some Name'
     'version' => 0.1,
     'collate' => %w( file_zzz file_aaa file_cca ), 
+    'collate' => %w( file_zzz file_aaa file_cca ),
+    'exclude' => 'bbb.*',
+    'nocopy' => 'file_cca',
     'variables' => {
         'name' => cli_read('person_name', 'give a default name')
         'age' => 33
@@ -175,7 +202,7 @@ dialog:
     - Pizza
     - Salad
 ````
-Strings and Numbers will result in text boxes, select_file and select_dir will provide file and folder selections, if the default value is an array a combobox will be displayed.  
+Strings and numbers will result in text boxes, select_file and select_dir will provide file and folder selections, if the default value is an array a combobox will be displayed.  
 
 #### Known issues
 When using dialogs the GUI is not always destroyed properly and only closes after the application terminates.
@@ -205,6 +232,8 @@ name: homeskeleton
 version: 0.1
 collate: 
   - .bashrc
+exclude: []
+nocopy: []
 variables:
 dialog: 
   - 
