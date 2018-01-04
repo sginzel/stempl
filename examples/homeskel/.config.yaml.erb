@@ -1,0 +1,15 @@
+---
+name: homeskeleton
+version: 0.1
+collate: 
+  - .bashrc
+variables:
+dialog: 
+  - # First window
+    username:  
+    histsize: <%= cli_read 'histsize', 'Tell me the histsize on the console please' %>
+    histfilesize: <%= (histsize).to_i*2 %>
+    is_admin: 
+      - Yes
+      - No
+

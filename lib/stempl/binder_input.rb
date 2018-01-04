@@ -1,5 +1,6 @@
 module Stempl
 	module BinderInput
+		
 		def cli_read(name, description = "Value for #{name}:")
 			val = @binder.get_variable(name)
 			if (val.nil?) then
@@ -25,6 +26,23 @@ module Stempl
 				@binder.register_variable(name, val)
 			end
 			@binder.get_variable(name)
+		end
+		
+		alias_method :read, :cli_read
+		alias_method :select_file, :cli_select_file
+		
+		def dialog(fields)
+			if (fields.is_a?(Array)) then
+				fields = Hash[fields.flatten.map{|f| [f, '']}]
+			end
+			form = Stempl::GuiForm::MyGtk3.new(fields)
+			result = form.get
+			
+			form = nil
+			#if fields.size == 1 then
+			#	result = result.values.first
+			#end
+			result
 		end
 		
 	end

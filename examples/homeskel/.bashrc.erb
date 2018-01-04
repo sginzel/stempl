@@ -1,0 +1,10 @@
+<%= File.open('/etc/skel/.bashrc', 'r').read %>
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+HISTSIZE=<%= cli_read 'histsize', 'How many records should be in the history? ' %>
+HISTFILESIZE=<%= cli_read 'histfilesize', 'How big should the history file be? ' %>
+
+echo '###########################################'
+echo 'Welcome <%= username %> to your new account'
+echo '<%= (is_admin == "true")?("YOU ARE ADMIN"):("") %> '
+echo '###########################################'
